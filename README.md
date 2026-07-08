@@ -1,76 +1,97 @@
-# College ERP — Enterprise Development
+# College ERP
 
-A comprehensive College ERP Web Application built using Django and the Antigravity development methodology.
+CIET's Django-based ERP for academics, faculty, students, parents, notifications, and internal administration.
 
-## 🚀 Quick Start (Development)
+## Overview
 
-1. **Clone the repository**
-2. **Install dependencies**:
-   ```bash
-   pip install -r requirements/development.txt
-   ```
-3. **Configure Environment**:
-   Create a `.env` file in the root directory (refer to `.env.example`).
-4. **Setup Database**:
-   ```bash
-   python manage.py migrate
-   python manage.py setup_roles
-   python manage.py populate_dev_data
-   ```
-5. **Run the Server**:
-   ```bash
-   python manage.py runserver
-   ```
-6. **Run Tests**:
-   ```bash
-   python -m pytest
-   ```
+This repository is a Django 5.2 project with a MongoDB-backed database layer and app-level modules for:
 
-## 🛠 Tech Stack
-- **Backend**: Django 5.x, DRF, Celery, Redis
-- **Frontend**: HTMX, Chart.js, Vanilla CSS
-- **Database**: MongoDB Atlas
-- **Monitoring**: Sentry, Prometheus/Grafana
+- `apps.accounts` for authentication, RBAC, OTP services, and bulk import utilities
+- `apps.academics` for academic data and result workflows
+- `apps.faculty` for mentor and faculty workflows
+- `apps.students` for profiles, certifications, and student-facing features
+- `apps.parents` for parent access
+- `apps.notifications` and `apps.messaging` for communication flows
+- `apps.audit` for audit logging
+- `apps.core` for shared middleware, base models, and site-level views
 
-## MongoDB Setup
-This project is configured to use MongoDB as its primary database through the official Django MongoDB backend.
+## Tech Stack
 
-1. Add your MongoDB connection settings to `.env`:
-   ```env
-   MONGODB_NAME=erp_portal
-   MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>/<database>?appName=Cluster0
-   ```
+- Backend: Django, Django REST Framework, django-htmx, django-extensions
+- Database: MongoDB via `django-mongodb-backend`
+- Background jobs: Celery, Redis, django-celery-beat, django-celery-results
+- API docs: drf-spectacular
+- Quality tools: pytest, pytest-django, black, flake8, isort
+
+## Quick Start
+
+1. Create and activate a virtual environment.
 2. Install dependencies:
    ```bash
    pip install -r requirements/development.txt
    ```
-3. Run the server:
+3. Create a `.env` file in the project root and set at least:
+   ```env
+   SECRET_KEY=your-secret-key
+   MONGODB_NAME=erp_portal
+   MONGODB_URI=mongodb://127.0.0.1:27017/erp_portal
+   ```
+4. Apply database migrations:
+   ```bash
+   python manage.py migrate
+   ```
+5. Create default role groups and permissions:
+   ```bash
+   python manage.py setup_roles
+   ```
+6. Run the development server:
    ```bash
    python manage.py runserver
    ```
 
-## Data Migration Utilities
-- `scripts/migrate_sqlite_to_mongodb.py`: copies legacy SQLite tables into MongoDB collections.
-- `scripts/repair_mongodb_types.py`: repairs imported MongoDB document types so Django can read them correctly.
+## Migration Commands
 
-## 📖 Key Sections (Rule Book Implementation)
-- **RBAC**: Implemented in `apps.accounts`, configured via `setup_roles` command.
-- **Service Layer**: Business logic in `apps.*.services`.
-- **Selectors**: Read-only queries in `apps.*.selectors`.
-- **Audit Logging**: Immutable logging in `apps.audit`.
+Use these when you change models or need to inspect migration state:
 
-## 📜 Documentation
-API documentation is available at `/api/schema/swagger/` when the server is running.
+```bash
+python manage.py makemigrations
+python manage.py makemigrations accounts
+python manage.py migrate
+python manage.py showmigrations
+```
 
-## Student Profile Rules
-- `College Roll No` is admin-controlled and fixed for each student.
-- Students can view their roll number in the profile, but they cannot edit it.
-- For any roll number correction, contact the Exam Cell/Admin.
+## Database Setup Notes
 
-## How Users Verify Email and Phone (OTP)
-1. Login as a student and open `Student Portal -> Settings` (`/student/portal/profile/`).
-2. In `Personal Email (OTP)` or `Personal Phone (OTP)`, enter the value you want to verify.
-3. Click `Send OTP`.
-4. Check your inbox/SMS, enter the 6-digit OTP in the input box.
-5. Click `Verify`.
-6. Status changes from `Not Verified` to `Verified`.
+The project is configured to use MongoDB as the default database engine in `config/settings/base.py`. If you are setting up a new environment, make sure the MongoDB URI in `.env` points to the correct server before running migrations.
+
+## Useful Commands
+
+- `python manage.py setup_roles` creates the default Django groups and permissions.
+- `python manage.py createsuperuser` creates an admin user.
+- `python -m pytest` runs the test suite.
+
+## Data Utilities
+
+- `scripts/migrate_sqlite_to_mongodb.py` migrates legacy SQLite data into MongoDB.
+- `scripts/repair_mongodb_types.py` repairs MongoDB document types for Django compatibility.
+- `scripts/seed_departments.py` seeds department data.
+- `scripts/clear_mongodb_data.py` clears MongoDB data for local resets.
+
+## Project Layout
+
+- `apps/` contains the Django apps
+- `config/` contains settings, ASGI, WSGI, and URLs
+- `templates/` contains Django templates
+- `static/` contains CSS, JS, images, and shared assets
+- `scripts/` contains data maintenance utilities
+
+## Testing
+
+```bash
+python -m pytest
+```
+
+## Notes
+
+- Student roll numbers are admin-controlled and should not be edited by students.
+- OTP verification for email and phone is available from the student portal settings flow.
